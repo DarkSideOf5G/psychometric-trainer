@@ -17,7 +17,11 @@ final class TapTests: XCTestCase {
    if let x=c["x"] as? Double,let y=c["y"] as? Double {
     let web=safari.webViews.firstMatch
     if web.waitForExistence(timeout:5) {
-     web.coordinate(withNormalizedOffset:CGVector(dx:0,dy:0)).withOffset(CGVector(dx:x,dy:y)).tap()
+     let start=web.coordinate(withNormalizedOffset:CGVector(dx:0,dy:0)).withOffset(CGVector(dx:x,dy:y))
+     if let endX=c["endX"] as? Double,let endY=c["endY"] as? Double {
+      let end=web.coordinate(withNormalizedOffset:CGVector(dx:0,dy:0)).withOffset(CGVector(dx:endX,dy:endY))
+      start.press(forDuration:0.05,thenDragTo:end)
+     } else {start.tap()}
     }
     URLSession.shared.dataTask(with:URL(string:"http://127.0.0.1:5151/done")!).resume()
    }

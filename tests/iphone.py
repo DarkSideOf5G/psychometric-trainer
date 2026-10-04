@@ -64,6 +64,21 @@ def identify():return js("return decodeURI(document.querySelector('#questionBody
 keys={k['question_id']:int(k['correct_choice_id'].rsplit('-c',1)[1]) for k in json.loads((APP.parent/'question-bank/private-answer-keys.json').read_text())}
 call('/url',{'url':url});ready();assert js('return location.href').startswith(url), 'Wrong site loaded';js("localStorage.removeItem('psycho-training:v1:'+new URL('./',location.href).pathname)");call('/refresh',{});ready();qid=identify();assert 'quantitative' in qid
 assert js('return document.documentElement.scrollWidth <= innerWidth')
+# Enlarge and pan the question without zooming/overflowing the surrounding page.
+click('#questionBody > .image-controls [data-zoom="in"]');click('#questionBody > .image-controls [data-zoom="in"]')
+assert js("return document.querySelector('#questionBody > .image-controls output').textContent==='150%'")
+assert js("return document.documentElement.scrollWidth<=innerWidth")
+if os.environ.get('NATIVE_TAPS'):
+ js("document.querySelector('#questionBody > .picture-button .picture-scroll').scrollIntoView({block:'center',behavior:'instant'})")
+ time.sleep(.5)
+ before=js("return document.querySelector('#questionBody > .picture-button .picture-scroll').scrollLeft")
+ gesture=js("const r=document.querySelector('#questionBody > .picture-button .picture-scroll').getBoundingClientRect();const y=(Math.max(r.top,20)+Math.min(r.bottom,innerHeight-20))/2;return {x:r.left+r.width*.25,y,endX:r.left+r.width*.75,endY:y}")
+ tapped.clear();commands.put(gesture);assert tapped.wait(30);time.sleep(.5)
+ after=js("return document.querySelector('#questionBody > .picture-button .picture-scroll').scrollLeft")
+ assert before>after, (before,after)
+ assert js("return !document.querySelector('#zoomDialog').open")
+click('#questionBody > .image-controls [data-zoom="fit"]')
+assert js("return document.querySelector('#questionBody > .image-controls output').textContent==='100%'")
 # Click the visible label instead of the deliberately visually hidden radio.
 click(f'.answer-grid label:has(input[value="{keys[qid]}"])');click('#checkButton');wait("return !document.querySelector('#feedback').hidden");assert 'נכון!' in js("return document.querySelector('#feedback').textContent")
 call('/refresh',{});ready();assert identify()!=qid
@@ -75,7 +90,7 @@ js("document.querySelector('#zoomRange').value=200;document.querySelector('#zoom
 (APP/'reports/iphone-zoom.png').write_bytes(base64.b64decode(call('/screenshot')));click('#closeZoom');click('#settingsButton');assert js("return document.querySelector('#settingsDialog').open");click('#resetButton');click('#cancelReset');assert js("return document.querySelector('#resetConfirm').hidden");click('#closeSettings')
 assert js("return document.documentElement.scrollWidth<=innerWidth")
 (APP/'reports/iphone.png').write_bytes(base64.b64decode(call('/screenshot')))
-report={'url':url,'passed':True,'device':({**saved['capabilities'],'browserName':'WKWebView (native XCTest host)'} if os.environ.get('NATIVE_TAPS') else saved['capabilities']),'checks':['touch answer selection','correct grading','saved retirement after reload','three subjects','incorrect grading','image zoom','settings/reset cancellation','no horizontal overflow'],'touch_driver':'XCTest' if os.environ.get('NATIVE_TAPS') else 'WebDriver'}
+report={'url':url,'passed':True,'device':({**saved['capabilities'],'browserName':'WKWebView (native XCTest host)'} if os.environ.get('NATIVE_TAPS') else saved['capabilities']),'checks':['inline zoom and fit','native horizontal image pan','touch answer selection','correct grading','saved retirement after reload','three subjects','incorrect grading','image zoom','settings/reset cancellation','no horizontal overflow'],'touch_driver':'XCTest' if os.environ.get('NATIVE_TAPS') else 'WebDriver'}
 (APP/'reports'/('iphone-deployed.json' if 'github.io' in url else 'iphone-local.json')).write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2))
 
 if os.environ.get("NATIVE_TAPS"):commands.put({"stop":True});time.sleep(1)

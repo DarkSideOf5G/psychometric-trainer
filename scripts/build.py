@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Package only verified student content into a GitHub Pages static site."""
-import collections,gzip,hashlib,json,shutil
+import collections,gzip,hashlib,json,shutil,subprocess,sys
 from pathlib import Path
 from PIL import Image
 ROOT=Path(__file__).resolve().parents[2];APP=ROOT/'training-app';BANK=ROOT/'question-bank';SITE=APP/'site'
@@ -40,4 +40,6 @@ def main():
    c['images']=images
   save(SITE/f'data/exams/{exam}.json',batch)
  counts=dict(collections.Counter(q['subject'] for q in catalog));version=digest(json.dumps([(q['id'],keys[q['id']]['key_version']) for q in questions]))[:16];save(SITE/'data/catalog.json',{'version':version,'questions':catalog,'counts':counts});(SITE/'.nojekyll').touch();summary={'questions':len(catalog),'subjects':counts,'public_source_images':len(assets),'exam_shards':len(exams),'site_bytes':sum(p.stat().st_size for p in SITE.rglob('*') if p.is_file()),'answer_checks':'SHA-256 per choice; original answer-key files are not published','version':version};save(APP/'reports/build.json',summary);print(json.dumps(summary,indent=2))
-if __name__=='__main__':main()
+if __name__=='__main__':
+ main()
+ subprocess.run([sys.executable,str(APP/'scripts/crop-metadata.py')],check=True)

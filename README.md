@@ -15,7 +15,7 @@ Correct answers and attempt counts are stored in localStorage, scoped to the sit
 ## Structure
 
 - `src/`: HTML, CSS and JavaScript source.
-- `scripts/build.py`: packages the verified parent question bank into the static site; requires Pillow and the original local question bank.
+- `scripts/build.py`: packages the verified parent question bank into the static site; requires the packages in `scripts/requirements-builder.txt` and the original local question bank.
 - `site/`: complete deployable site, including exam shards, question images and context crops. Checked into Git so deployment doesn't require the private source database.
 - `tests/`: automated logic, all-question asset/grading checks, browser integration tests.
 - `.github/workflows/pages.yml`: tests and publishes `site/` to GitHub Pages.
@@ -28,7 +28,7 @@ npm test
 npm run serve
 ```
 
-Open http://127.0.0.1:8787/. No frontend dependencies or build server are needed. Rebuild from the source bank with a Python interpreter that has Pillow: `python3 scripts/build.py`.
+Open http://127.0.0.1:8787/. No frontend dependencies or build server are needed. Rebuild from the source bank with a Python interpreter with the builder dependencies: `python3 scripts/build.py`.
 
 Browser test: `node tests/browser.cjs` (set `PLAYWRIGHT_PATH` to an installed Playwright package if using another computer; uses installed macOS Google Chrome). Set `APP_URL` to test the deployed site. The exhaustive data test checks all 8,532 questions, 34,128 answer choices, context references and image existence.
 
@@ -45,3 +45,11 @@ Run `bash scripts/test-iphone.sh` with Xcode installed and the local site runnin
 The local and GitHub Pages versions have been verified in Chrome and on an iPhone SE simulator with iOS 18.2 WebKit and native XCTest taps. All 8,532 grading digests were checked against the original official answer keys, and the GitHub workflow validates every packaged question and image reference.
 
 Search-indexing directives (`noindex`, `nofollow`, `noarchive`) discourage crawler discovery of the website. They do not provide access control or guarantee that a public site or repository cannot be discovered. Repository privacy and website access restrictions must be configured separately.
+
+## Image readability
+
+Questions, passages and diagrams use the available screen width, with small phone gutters and safe-area padding. Each image has inline **+**, **−** and **fit-to-width** controls. Enlarged images pan horizontally within their own container; the surrounding page stays within the screen. Click an image to open its complete original in the zoom dialog.
+
+`site/data/image-crops.json` contains reversible viewport coordinates computed by `scripts/crop-metadata.py`. Original images and answer keys are unchanged. The crop generator recognizes repeated page-edge decorations, retains all other source PDF text/drawing/image bounds with padding, and checks remaining raster ink. Ambiguous margins stay visible. Vertical content is never trimmed. It verified 11,070 image viewports across 3,044 source pages. If optional crop metadata cannot load, the app displays the original images.
+
+Install builder dependencies using `python3 -m pip install -r scripts/requirements-builder.txt`. `scripts/build.py` regenerates crop metadata after packaging the source bank. `node tests/readability.cjs` checks desktop and phone widths, inline zoom/fit, original-image access and crop-data network fallback. The iPhone test also performs a native horizontal swipe on an enlarged question.
