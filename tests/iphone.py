@@ -62,7 +62,7 @@ def ready():
  time.sleep(.4)
 def identify():return js("return decodeURI(document.querySelector('#questionBody > .picture-button img').src).match(/(he-\\d{4}-\\d{2}-(?:quantitative|verbal|english)-\\d-q\\d+)-\\d.webp/)[1]")
 keys={k['question_id']:int(k['correct_choice_id'].rsplit('-c',1)[1]) for k in json.loads((APP.parent/'question-bank/private-answer-keys.json').read_text())}
-call('/url',{'url':url});ready();js("localStorage.removeItem('psycho-training:v1:'+new URL('./',location.href).pathname)");call('/refresh',{});ready();qid=identify();assert 'quantitative' in qid
+call('/url',{'url':url});ready();assert js('return location.href').startswith(url), 'Wrong site loaded';js("localStorage.removeItem('psycho-training:v1:'+new URL('./',location.href).pathname)");call('/refresh',{});ready();qid=identify();assert 'quantitative' in qid
 assert js('return document.documentElement.scrollWidth <= innerWidth')
 # Click the visible label instead of the deliberately visually hidden radio.
 click(f'.answer-grid label:has(input[value="{keys[qid]}"])');click('#checkButton');wait("return !document.querySelector('#feedback').hidden");assert 'נכון!' in js("return document.querySelector('#feedback').textContent")

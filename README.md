@@ -1,5 +1,7 @@
 # Psychometric trainer
 
+[Open the live trainer](https://darksideof5g.github.io/psychometric-trainer/)
+
 A static Hebrew-interface trainer with separate **math, Hebrew, and English** modes. It presents a random original question image, accepts answers 1–4, checks against the official key, and removes correctly answered questions from subsequent sessions.
 
 ## Data and grading
@@ -39,3 +41,5 @@ This repository publishes a static site using GitHub Pages. All asset paths work
 The simulator suite uses the real iOS WebKit engine in a minimal WKWebView host and genuine XCTest screen taps. Safari WebDriver's scrolling-coordinate errors and its native-input lock prevent combining its inspection session with native taps reliably. The test host runs exactly the same static app; it is only a testing tool.
 
 Run `bash scripts/test-iphone.sh` with Xcode installed and the local site running. Set `SIMULATOR_UDID` for another installed simulator and `APP_URL` for the deployed website. The tests check correct/incorrect grading, touch answer selection, retirement after reload, all three modes, zoom, settings/reset cancellation and horizontal overflow. Chrome tests also cover backup/import, completion and network/storage failures. Test reports and screenshots are saved locally in `reports/`.
+
+The local and GitHub Pages versions have been verified in Chrome and on an iPhone SE simulator with iOS 18.2 WebKit and native XCTest taps. All 8,532 grading digests were checked against the original official answer keys, and the GitHub workflow validates every packaged question and image reference.
