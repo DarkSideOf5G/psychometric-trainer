@@ -1,0 +1,1 @@
+{"name":"psychometric-training","version":"1.0.0","private":true,"type":"module","scripts":{"test":"node --test tests/core.test.mjs","serve":"python3 -m http.server 8787 --directory site --bind 127.0.0.1"},"engines":{"node":">=20"}}
