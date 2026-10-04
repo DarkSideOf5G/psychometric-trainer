@@ -14,7 +14,10 @@ def wait(script):
  raise RuntimeError('Timed out: '+script)
 def click(selector):
  el=call('/element',{'using':'css selector','value':selector});eid=el['element-6066-11e4-a52e-4f735466cecf'];call('/element/'+eid+'/click',{})
-def ready():wait("return document.querySelector('#answers') && !document.querySelector('#answers').disabled")
+def ready():
+ wait("return document.querySelector('#answers') && !document.querySelector('#answers').disabled")
+ wait("return [...document.querySelectorAll('#questionBody > .picture-button img')].every(i=>i.complete && i.naturalWidth>0)")
+ time.sleep(.4)
 def identify():return js("return decodeURI(document.querySelector('#questionBody > .picture-button img').src).match(/(he-\\d{4}-\\d{2}-(?:quantitative|verbal|english)-\\d-q\\d+)-\\d.webp/)[1]")
 keys={k['question_id']:int(k['correct_choice_id'].rsplit('-c',1)[1]) for k in json.loads((APP.parent/'question-bank/private-answer-keys.json').read_text())}
 call('/url',{'url':url});ready();js("localStorage.removeItem('psycho-training:v1:'+new URL('./',location.href).pathname)");call('/refresh',{});ready();qid=identify();assert 'quantitative' in qid

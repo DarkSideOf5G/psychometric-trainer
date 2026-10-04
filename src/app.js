@@ -2,7 +2,7 @@ import {pool,chooseQuestion,Progress,checkAnswer,correctLabel} from './core.js';
 const $=id=>document.getElementById(id), base=new URL('./',import.meta.url);
 let catalog,progress,current,mode='math',generation=0,graded=false;
 const batches=new Map(),names={math:'חשיבה כמותית',verbal:'חשיבה מילולית',english:'אנגלית'};
-let storage;try{storage=window.localStorage;}catch{storage={getItem(){return null},setItem(){throw Error('Unavailable')}};}
+let storage;try{storage=window.localStorage;}catch{storage={getItem(){throw Error('Unavailable')},setItem(){throw Error('Unavailable')}};}
 const key='psycho-training:v1:'+base.pathname;
 async function fetchJSON(path){const r=await fetch(new URL(path,base));if(!r.ok)throw Error('Download failed');return r.json();}
 function rows(){return catalog.questions.filter(q=>q.subject===(mode==='math'?'quantitative':mode));}
