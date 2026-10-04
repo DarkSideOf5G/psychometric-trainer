@@ -1,6 +1,6 @@
 # Psychometric trainer
 
-[Open the live trainer](https://darksideof5g.github.io/psychometric-trainer/)
+Private app for the owner’s personal use only. No other person has permission to use, copy or redistribute this app. Availability at an Internet address grants no permission. Original exam-content rights remain with their respective owners.
 
 A static Hebrew-interface trainer with separate **math, Hebrew, and English** modes. It presents a random original question image, accepts answers 1–4, checks against the official key, and removes correctly answered questions from subsequent sessions.
 
@@ -43,3 +43,5 @@ The simulator suite uses the real iOS WebKit engine in a minimal WKWebView host 
 Run `bash scripts/test-iphone.sh` with Xcode installed and the local site running. Set `SIMULATOR_UDID` for another installed simulator and `APP_URL` for the deployed website. The tests check correct/incorrect grading, touch answer selection, retirement after reload, all three modes, zoom, settings/reset cancellation and horizontal overflow. Chrome tests also cover backup/import, completion and network/storage failures. Test reports and screenshots are saved locally in `reports/`.
 
 The local and GitHub Pages versions have been verified in Chrome and on an iPhone SE simulator with iOS 18.2 WebKit and native XCTest taps. All 8,532 grading digests were checked against the original official answer keys, and the GitHub workflow validates every packaged question and image reference.
+
+Search-indexing directives (`noindex`, `nofollow`, `noarchive`) discourage crawler discovery of the website. They do not provide access control or guarantee that a public site or repository cannot be discovered. Repository privacy and website access restrictions must be configured separately.
