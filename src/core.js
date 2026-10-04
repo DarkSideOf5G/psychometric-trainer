@@ -1,5 +1,6 @@
-export function pool(catalog, mode, language = 'all') {
- return catalog.questions.filter(q=>q.mode===mode && (mode!=='language'||language==='all'||q.subject===language));
+export function pool(catalog, mode) {
+ const subject=mode==='math'?'quantitative':mode;
+ return catalog.questions.filter(q=>q.subject===subject);
 }
 export function chooseQuestion(rows, mastered, previous, random=Math.random) {
  let available=rows.filter(q=>!Object.hasOwn(mastered,q.id));

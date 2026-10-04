@@ -1,7 +1,41 @@
 """W3C Safari WebDriver test on an actual iOS simulator, not mobile emulation."""
-import json,urllib.request,urllib.error,time,base64,pathlib,os
-APP=pathlib.Path(__file__).resolve().parents[1];saved=json.load(open('/tmp/psycho-safari-session.json'))['value'];sid=saved['sessionId'];root='http://127.0.0.1:5150/session/'+sid;url=os.environ.get('APP_URL','http://127.0.0.1:8787/')
+import json,urllib.request,urllib.error,time,base64,pathlib,os,queue,threading,subprocess
+from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
+commands=queue.Queue();tapped=threading.Event();scripts=queue.Queue();results=queue.Queue()
+class Bridge(BaseHTTPRequestHandler):
+ def do_GET(self):
+  if self.path=="/script":
+   try:body={"script":scripts.get(timeout=.3)}
+   except queue.Empty:body={}
+  elif self.path=="/next":
+   try:body=commands.get(timeout=.5)
+   except queue.Empty:body={}
+  else:tapped.set();body={}
+  data=json.dumps(body).encode();self.send_response(200);self.send_header("Content-Type","application/json");self.end_headers();self.wfile.write(data)
+ def do_POST(self):
+  body=json.loads(self.rfile.read(int(self.headers["Content-Length"])));results.put(body.get("value"));self.send_response(200);self.end_headers()
+ def log_message(self,*args):pass
+if os.environ.get("NATIVE_TAPS"):
+ threading.Thread(target=ThreadingHTTPServer(("127.0.0.1",5151),Bridge).serve_forever,daemon=True).start()
+APP=pathlib.Path(__file__).resolve().parents[1]
+url=os.environ.get('APP_URL','http://127.0.0.1:8787/')
+if os.environ.get('NATIVE_TAPS'):
+ udid=os.environ.get('SIMULATOR_UDID','3BBC1F5A-396B-4234-A4FF-445CAB30E516')
+ devices=json.loads(subprocess.check_output(['xcrun','simctl','list','devices','--json']))['devices']
+ runtime,device=next((runtime,d) for runtime,items in devices.items() for d in items if d['udid']==udid)
+ saved={'capabilities':{'deviceName':device['name'],'platformVersion':runtime.rsplit('iOS-',1)[1].replace('-','.'),'platformName':'iOS','browserName':'WKWebView (native XCTest host)','deviceUDID':udid}}
+ root=''
+else:
+ saved=json.load(open('/tmp/psycho-safari-session.json'))['value'];root='http://127.0.0.1:5150/session/'+saved['sessionId']
+
 def call(path,data=None,method=None):
+ if os.environ.get('NATIVE_TAPS'):
+  if path=='/execute/sync':code='(function(){'+data['script']+'})()'
+  elif path=='/url':code='location.href='+json.dumps(data['url'])
+  elif path=='/refresh':code='location.reload()'
+  elif path=='/screenshot':code='__screenshot__'
+  else:raise RuntimeError('Unsupported native command '+path)
+  scripts.put(code);return results.get(timeout=120)
  req=urllib.request.Request(root+path,data=json.dumps(data).encode() if data is not None else None,headers={'Content-Type':'application/json'},method=method or ('POST' if data is not None else 'GET'))
  try:return json.load(urllib.request.urlopen(req,timeout=60))['value']
  except urllib.error.HTTPError as e:raise RuntimeError(e.read().decode())
@@ -13,7 +47,15 @@ def wait(script):
   time.sleep(.25)
  raise RuntimeError('Timed out: '+script)
 def click(selector):
- el=call('/element',{'using':'css selector','value':selector});eid=el['element-6066-11e4-a52e-4f735466cecf'];call('/element/'+eid+'/click',{})
+ if os.environ.get('NATIVE_TAPS'):
+  js("document.querySelector("+json.dumps(selector)+").scrollIntoView({block:'center',behavior:'instant'})")
+  time.sleep(.5)
+  rect=js("const r=document.querySelector("+json.dumps(selector)+").getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}")
+  tapped.clear();commands.put(rect)
+  if not tapped.wait(30):raise RuntimeError('Native touch driver did not respond')
+  time.sleep(.25)
+ else:
+  el=call('/element',{'using':'css selector','value':selector});eid=el['element-6066-11e4-a52e-4f735466cecf'];call('/element/'+eid+'/click',{})
 def ready():
  wait("return document.querySelector('#answers') && !document.querySelector('#answers').disabled")
  wait("return [...document.querySelectorAll('#questionBody > .picture-button img')].every(i=>i.complete && i.naturalWidth>0)")
@@ -33,5 +75,7 @@ js("document.querySelector('#zoomRange').value=200;document.querySelector('#zoom
 (APP/'reports/iphone-zoom.png').write_bytes(base64.b64decode(call('/screenshot')));click('#closeZoom');click('#settingsButton');assert js("return document.querySelector('#settingsDialog').open");click('#resetButton');click('#cancelReset');assert js("return document.querySelector('#resetConfirm').hidden");click('#closeSettings')
 assert js("return document.documentElement.scrollWidth<=innerWidth")
 (APP/'reports/iphone.png').write_bytes(base64.b64decode(call('/screenshot')))
-report={'url':url,'passed':True,'device':saved['capabilities'],'checks':['touch answer selection','correct grading','saved retirement after reload','three subjects','incorrect grading','image zoom','settings/reset cancellation','no horizontal overflow']}
+report={'url':url,'passed':True,'device':({**saved['capabilities'],'browserName':'WKWebView (native XCTest host)'} if os.environ.get('NATIVE_TAPS') else saved['capabilities']),'checks':['touch answer selection','correct grading','saved retirement after reload','three subjects','incorrect grading','image zoom','settings/reset cancellation','no horizontal overflow'],'touch_driver':'XCTest' if os.environ.get('NATIVE_TAPS') else 'WebDriver'}
 (APP/'reports'/('iphone-deployed.json' if 'github.io' in url else 'iphone-local.json')).write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2))
+
+if os.environ.get("NATIVE_TAPS"):commands.put({"stop":True});time.sleep(1)

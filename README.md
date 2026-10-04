@@ -33,3 +33,9 @@ Browser test: `node tests/browser.cjs` (set `PLAYWRIGHT_PATH` to an installed Pl
 ## Hosting
 
 This repository publishes a static site using GitHub Pages. All asset paths work under a repository URL prefix. Browser storage belongs to each origin; export/import a backup to carry local progress to GitHub. The site contains original educational exam material; rights remain with its owners.
+
+## iPhone simulator verification
+
+The simulator suite uses the real iOS WebKit engine in a minimal WKWebView host and genuine XCTest screen taps. Safari WebDriver's scrolling-coordinate errors and its native-input lock prevent combining its inspection session with native taps reliably. The test host runs exactly the same static app; it is only a testing tool.
+
+Run `bash scripts/test-iphone.sh` with Xcode installed and the local site running. Set `SIMULATOR_UDID` for another installed simulator and `APP_URL` for the deployed website. The tests check correct/incorrect grading, touch answer selection, retirement after reload, all three modes, zoom, settings/reset cancellation and horizontal overflow. Chrome tests also cover backup/import, completion and network/storage failures. Test reports and screenshots are saved locally in `reports/`.
