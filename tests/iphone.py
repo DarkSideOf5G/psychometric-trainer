@@ -62,7 +62,7 @@ def ready():
  time.sleep(.4)
 def identify():return js("return decodeURI(document.querySelector('#questionBody > .picture-button img').src).match(/(he-\\d{4}-\\d{2}-(?:quantitative|verbal|english)-\\d-q\\d+)-\\d.webp/)[1]")
 keys={k['question_id']:int(k['correct_choice_id'].rsplit('-c',1)[1]) for k in json.loads((APP.parent/'question-bank/private-answer-keys.json').read_text())}
-call('/url',{'url':url});ready();assert js('return location.href').startswith(url), 'Wrong site loaded';js("localStorage.removeItem('psycho-training:v1:'+new URL('./',location.href).pathname)");call('/refresh',{});ready();qid=identify();assert 'quantitative' in qid
+call('/url',{'url':url});ready();assert js('return location.href').startswith(url), 'Wrong site loaded';js("localStorage.removeItem('psycho-training:v1:'+new URL('./',location.href).pathname)");js('window.__testBeforeRefresh=true');call('/refresh',{});wait('return !window.__testBeforeRefresh');ready();qid=identify();assert 'quantitative' in qid
 assert js('return document.documentElement.scrollWidth <= innerWidth')
 # Enlarge and pan the question without zooming/overflowing the surrounding page.
 click('#questionBody > .image-controls [data-zoom="in"]');click('#questionBody > .image-controls [data-zoom="in"]')
