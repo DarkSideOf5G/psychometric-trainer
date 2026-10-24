@@ -9,3 +9,5 @@ main{max-width:none;padding-inline:12px}.question-card{padding-inline:12px}.cont
 .top-tags{display:flex;gap:8px;align-items:center}
 .timer{background:#f3f4ef;color:#c0201b;font-weight:600;padding:6px 11px;border-radius:20px;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:640px){.timer{font-size:11px;padding:5px 8px}}
+.scratchpad canvas{display:block;width:100%;height:320px;margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:10px;touch-action:none;cursor:crosshair}
+.scratch-tools{display:flex;gap:8px;align-items:center;margin-top:10px}
