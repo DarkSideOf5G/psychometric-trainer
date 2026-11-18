@@ -1,6 +1,6 @@
-export function pool(catalog, mode) {
+export function pool(catalog, mode, topic='') {
  const subject=mode==='math'?'quantitative':mode;
- return catalog.questions.filter(q=>q.subject===subject);
+ return catalog.questions.filter(q=>q.subject===subject&&(!topic||q.topics?.includes(topic)));
 }
 export function chooseQuestion(rows, mastered, previous, random=Math.random) {
  let available=rows.filter(q=>!Object.hasOwn(mastered,q.id));

@@ -11,3 +11,4 @@ main{max-width:none;padding-inline:12px}.question-card{padding-inline:12px}.cont
 @media(max-width:640px){.timer{font-size:11px;padding:5px 8px}}
 .scratchpad canvas{display:block;width:100%;height:320px;margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:10px;touch-action:none;cursor:crosshair}
 .scratch-tools{display:flex;gap:8px;align-items:center;margin-top:10px}
+.topic-controls{margin:0 0 24px;padding:18px;border:1px solid #ddd;border-radius:16px;background:#fff}.topic-controls label{display:block;font-weight:700;margin-bottom:8px}.topic-controls select{font:inherit;width:100%;max-width:480px;padding:12px;border:1px solid #aaa;border-radius:8px;background:#fff;color:inherit}.topic-controls p{line-height:1.8;overflow-wrap:anywhere}.topic-note{font-size:.85rem;color:#666}

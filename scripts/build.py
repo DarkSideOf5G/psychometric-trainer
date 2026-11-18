@@ -42,4 +42,5 @@ def main():
  counts=dict(collections.Counter(q['subject'] for q in catalog));version=digest(json.dumps([(q['id'],keys[q['id']]['key_version']) for q in questions]))[:16];save(SITE/'data/catalog.json',{'version':version,'questions':catalog,'counts':counts});(SITE/'.nojekyll').touch();summary={'questions':len(catalog),'subjects':counts,'public_source_images':len(assets),'exam_shards':len(exams),'site_bytes':sum(p.stat().st_size for p in SITE.rglob('*') if p.is_file()),'answer_checks':'SHA-256 per choice; original answer-key files are not published','version':version};save(APP/'reports/build.json',summary);print(json.dumps(summary,indent=2))
 if __name__=='__main__':
  main()
+ subprocess.run([sys.executable,str(APP/'scripts/tag-topics.py')],check=True)
  subprocess.run([sys.executable,str(APP/'scripts/crop-metadata.py')],check=True)

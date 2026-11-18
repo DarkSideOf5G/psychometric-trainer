@@ -10,3 +10,24 @@ test("three subject pools remain separate",()=>{const catalog={questions:[{subje
 test('all question and passage viewport records remain inside original images',async()=>{const crops=JSON.parse(await readFile('site/data/image-crops.json'));let n=0;for(const f of await readdir('site/data/exams')){const batch=JSON.parse(await readFile('site/data/exams/'+f));for(const q of Object.values(batch.questions))for(const r of q.regions){assert.ok(crops[r.asset],r.asset);n++;}for(const c of Object.values(batch.contexts))for(const r of c.images||[])assert.ok(crops[r.asset],r.asset);}for(const m of Object.values(crops)){const [w,h]=m.size,[l,t,r,b]=m.box;assert.ok([w,h,l,t,r,b].every(Number.isFinite));assert.ok(l>=0&&t>=0&&r<=w&&b<=h&&r>l&&b>t);}assert.ok(n>=8532);});
 
 test("2014 February q17 excludes the redundant number and separator",async()=>{const crops=JSON.parse(await readFile("site/data/image-crops.json"));const {box:[l,t,r,b]}=crops["assets/he-2014-02/he-2014-02-quantitative-1-q17-0.webp"];assert.ok(l>200);assert.ok(r<1210);assert.ok(b<390);});
+
+test('topic pools include multiple assignments and keep unclassified questions in all topics',()=>{
+ const catalog={questions:[{id:'a',subject:'quantitative',topics:['algebra','numbers']},{id:'b',subject:'quantitative',topics:[]},{id:'c',subject:'verbal'}]};
+ assert.deepEqual(pool(catalog,'math','numbers').map(q=>q.id),['a']);
+ assert.deepEqual(pool(catalog,'math','algebra').map(q=>q.id),['a']);
+ assert.equal(pool(catalog,'math','geometry').length,0);
+ assert.equal(pool(catalog,'math').length,2);
+ assert.equal(pool(catalog,'verbal').length,1);
+});
+
+test('packaged topic assignments use the supplied taxonomy',async()=>{
+ const {topics}=await import('../src/topics.js');
+ const ids=new Set(topics.map(t=>t.id));
+ assert.equal(ids.size,8);
+ const catalog=JSON.parse(await readFile('site/data/catalog.json'));
+ for(const q of catalog.questions.filter(q=>q.subject==='quantitative')){
+  assert.ok(Array.isArray(q.topics));
+  assert.ok(q.topics.every(t=>ids.has(t)));
+ }
+ for(const t of topics)assert.ok(pool(catalog,'math',t.id).length>0);
+});
